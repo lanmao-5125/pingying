@@ -9,7 +9,8 @@
 *{box-sizing:border-box}
 html,body{
   margin:0;
-  min-height:100%;
+  height:100%;
+  overflow:hidden;
   font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
   color:#f4fbff;
   background:radial-gradient(circle at 10% 10%,#1d2c78 0,#090f2a 35%,#070b1d 100%);
@@ -20,9 +21,12 @@ html,body{
   position:relative;
   z-index:1;
   width:min(1100px,95%);
-  margin:18px auto 30px;
+  height:100dvh;
+  margin:0 auto;
+  padding:12px 0;
   display:grid;
-  gap:18px;
+  grid-template-rows:auto 1fr auto;
+  gap:12px;
 }
 .glass{background:linear-gradient(160deg,#ffffff1f,#ffffff0d);backdrop-filter:blur(8px);border-radius:22px}
 .neon-border{border:1px solid #ffffff40;box-shadow:0 0 0 1px #36f7ff30 inset,0 0 24px #36f7ff2f,0 0 40px #ff4dd81a}
@@ -47,8 +51,8 @@ html,body{
 }
 .chip b{font-size:1.25em}
 
-.stage{padding:28px 24px;text-align:center}
-.stage-top{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap}
+.stage{padding:20px 20px;text-align:center;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.stage-top{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap}
 .avatar{font-size:clamp(3rem,5vw,4.6rem);filter:drop-shadow(0 0 10px #36f7ffaa)}
 .label{margin:0;color:#cce8ff;font-size:clamp(1rem,1.5vw,1.2rem)}
 .hanzi{
@@ -132,10 +136,11 @@ html,body{
   .choice{min-height:86px;font-size:2rem}
 }
 @media (max-width:640px){
-  .app{width:min(96%,96%)}
-  .hud,.stage{padding:18px 14px}
+  .app{width:min(96%,96%);padding:8px 0;gap:10px}
+  .hud,.stage{padding:14px 12px}
   .btn{width:100%}
-  .actions{gap:10px}
-  .hanzi{font-size:4rem}
-  .feedback{font-size:1.3rem}
+  .actions{gap:8px;margin:12px 0 10px}
+  .hanzi{font-size:3.5rem}
+  .feedback{font-size:1.2rem;min-height:30px}
+  .choice{min-height:72px;font-size:1.8rem}
 }
