@@ -1,10 +1,45 @@
 const totalRounds = 10;
 const localBank = [
-  { word:'猫', pinyin:'māo', emoji:'🐱', choices:['māo','niú','gǒu','yú'] },
-  { word:'狗', pinyin:'gǒu', emoji:'🐶', choices:['māo','gǒu','jī','niǎo'] },
-  { word:'鱼', pinyin:'yú', emoji:'🐟', choices:['qū','yú','rì','mù'] },
+  { word:'猫', pinyin:'māo', emoji:'🐱', choices:['māo','miāo','máo','mào'] },
+  { word:'狗', pinyin:'gǒu', emoji:'🐶', choices:['gǒu','gōu','gòu','guǒ'] },
+  { word:'鱼', pinyin:'yú', emoji:'🐟', choices:['yú','yǔ','yù','yúe'] },
+  { word:'鸟', pinyin:'niǎo', emoji:'🐦', choices:['niǎo','niào','liǎo','niáo'] },
+  { word:'牛', pinyin:'niú', emoji:'🐮', choices:['niú','niǔ','niù','liú'] },
+  { word:'羊', pinyin:'yáng', emoji:'🐑', choices:['yáng','yǎng','yàng','liáng'] },
+  { word:'马', pinyin:'mǎ', emoji:'🐴', choices:['mǎ','má','mà','mā'] },
+  { word:'兔', pinyin:'tù', emoji:'🐰', choices:['tù','tǔ','tú','dù'] },
   { word:'花', pinyin:'huā', emoji:'🌸', choices:['huā','huá','huǎ','huà'] },
-  { word:'山', pinyin:'shān', emoji:'⛰️', choices:['shān','sān','shǎn','shàn'] }
+  { word:'草', pinyin:'cǎo', emoji:'🌿', choices:['cǎo','cāo','cào','chǎo'] },
+  { word:'树', pinyin:'shù', emoji:'🌳', choices:['shù','shǔ','shū','sù'] },
+  { word:'山', pinyin:'shān', emoji:'⛰️', choices:['shān','sān','shǎn','shàn'] },
+  { word:'河', pinyin:'hé', emoji:'🏞️', choices:['hé','hè','hě','kē'] },
+  { word:'云', pinyin:'yún', emoji:'☁️', choices:['yún','yǔn','yùn','yóng'] },
+  { word:'雨', pinyin:'yǔ', emoji:'🌧️', choices:['yǔ','yù','yū','yú'] },
+  { word:'雪', pinyin:'xuě', emoji:'❄️', choices:['xuě','xué','xūě','xiě'] },
+  { word:'风', pinyin:'fēng', emoji:'🌬️', choices:['fēng','féng','fěng','fèng'] },
+  { word:'火', pinyin:'huǒ', emoji:'🔥', choices:['huǒ','huō','huó','hǔo'] },
+  { word:'水', pinyin:'shuǐ', emoji:'💧', choices:['shuǐ','suǐ','shuí','shuì'] },
+  { word:'日', pinyin:'rì', emoji:'☀️', choices:['rì','rǐ','rī','lì'] },
+  { word:'月', pinyin:'yuè', emoji:'🌙', choices:['yuè','yǔe','yuě','yue'] },
+  { word:'星', pinyin:'xīng', emoji:'⭐', choices:['xīng','xíng','xǐng','xìng'] },
+  { word:'车', pinyin:'chē', emoji:'🚗', choices:['chē','cē','chě','chè'] },
+  { word:'船', pinyin:'chuán', emoji:'🚢', choices:['chuán','chuǎn','chuàn','cuán'] },
+  { word:'门', pinyin:'mén', emoji:'🚪', choices:['mén','mēn','mèn','měn'] },
+  { word:'窗', pinyin:'chuāng', emoji:'🪟', choices:['chuāng','chuáng','chuǎng','chuàng'] },
+  { word:'桌', pinyin:'zhuō', emoji:'🪑', choices:['zhuō','zuō','zhuó','zhuǒ'] },
+  { word:'书', pinyin:'shū', emoji:'📚', choices:['shū','sū','shú','shǔ'] },
+  { word:'笔', pinyin:'bǐ', emoji:'✏️', choices:['bǐ','bí','bì','pǐ'] },
+  { word:'球', pinyin:'qiú', emoji:'⚽', choices:['qiú','qiúe','qǔ','jiú'] },
+  { word:'米', pinyin:'mǐ', emoji:'🍚', choices:['mǐ','mí','mì','nǐ'] },
+  { word:'面', pinyin:'miàn', emoji:'🍜', choices:['miàn','mián','mian','niàn'] },
+  { word:'果', pinyin:'guǒ', emoji:'🍎', choices:['guǒ','gǔo','guō','gōu'] },
+  { word:'茶', pinyin:'chá', emoji:'🍵', choices:['chá','chā','chǎ','chà'] },
+  { word:'手', pinyin:'shǒu', emoji:'✋', choices:['shǒu','shóu','sǒu','shòu'] },
+  { word:'足', pinyin:'zú', emoji:'🦶', choices:['zú','zǔ','zù','zhú'] },
+  { word:'眼', pinyin:'yǎn', emoji:'👀', choices:['yǎn','yàn','yān','yán'] },
+  { word:'耳', pinyin:'ěr', emoji:'👂', choices:['ěr','ér','ěrh','er'] },
+  { word:'口', pinyin:'kǒu', emoji:'👄', choices:['kǒu','kòu','kōu','gǒu'] },
+  { word:'鼻', pinyin:'bí', emoji:'👃', choices:['bí','bǐ','bì','pí'] }
 ];
 const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, q: null, weakPoints: [], recentWords: [] };
 let nextQPromise = null;
@@ -26,7 +61,7 @@ function speak(text){
   speechSynthesis.cancel(); speechSynthesis.speak(msg);
 }
 function pickLocalQuestion(){
-  const pool = localBank.filter(q => !s.recentWords.slice(-4).includes(q.word));
+  const pool = localBank.filter(q => !s.recentWords.slice(-12).includes(q.word));
   const list = pool.length ? pool : localBank;
   return JSON.parse(JSON.stringify(list[Math.floor(Math.random() * list.length)]));
 }
@@ -38,7 +73,7 @@ function isValidQuestion(q){
 async function aiQuestion(){
   const r = await fetch('/api/ai/generate-question', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ age:'3-7', weakPoints: s.weakPoints.slice(-3), recentWords: s.recentWords.slice(-4) })
+    body: JSON.stringify({ age:'3-7', weakPoints: s.weakPoints.slice(-5), recentWords: s.recentWords.slice(-12) })
   });
   const data = await r.json();
   return data.question;

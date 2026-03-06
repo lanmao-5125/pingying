@@ -11,9 +11,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const fallback = [
-  { word: '猫', pinyin: 'māo', emoji: '🐱', choices: ['māo', 'niú', 'gǒu', 'yú'] },
-  { word: '狗', pinyin: 'gǒu', emoji: '🐶', choices: ['māo', 'gǒu', 'jī', 'niǎo'] },
-  { word: '鱼', pinyin: 'yú', emoji: '🐟', choices: ['qū', 'yú', 'rì', 'mù'] }
+  { word:'猫', pinyin:'māo', emoji:'🐱', choices:['māo','miāo','máo','mào'] },
+  { word:'狗', pinyin:'gǒu', emoji:'🐶', choices:['gǒu','gōu','gòu','guǒ'] },
+  { word:'鱼', pinyin:'yú', emoji:'🐟', choices:['yú','yǔ','yù','yúe'] },
+  { word:'鸟', pinyin:'niǎo', emoji:'🐦', choices:['niǎo','niào','liǎo','niáo'] },
+  { word:'牛', pinyin:'niú', emoji:'🐮', choices:['niú','niǔ','niù','liú'] },
+  { word:'羊', pinyin:'yáng', emoji:'🐑', choices:['yáng','yǎng','yàng','liáng'] },
+  { word:'马', pinyin:'mǎ', emoji:'🐴', choices:['mǎ','má','mà','mā'] },
+  { word:'兔', pinyin:'tù', emoji:'🐰', choices:['tù','tǔ','tú','dù'] },
+  { word:'花', pinyin:'huā', emoji:'🌸', choices:['huā','huá','huǎ','huà'] },
+  { word:'草', pinyin:'cǎo', emoji:'🌿', choices:['cǎo','cāo','cào','chǎo'] },
+  { word:'树', pinyin:'shù', emoji:'🌳', choices:['shù','shǔ','shū','sù'] },
+  { word:'山', pinyin:'shān', emoji:'⛰️', choices:['shān','sān','shǎn','shàn'] },
+  { word:'河', pinyin:'hé', emoji:'🏞️', choices:['hé','hè','hě','kē'] },
+  { word:'云', pinyin:'yún', emoji:'☁️', choices:['yún','yǔn','yùn','yóng'] },
+  { word:'雨', pinyin:'yǔ', emoji:'🌧️', choices:['yǔ','yù','yū','yú'] },
+  { word:'雪', pinyin:'xuě', emoji:'❄️', choices:['xuě','xué','xūě','xiě'] },
+  { word:'风', pinyin:'fēng', emoji:'🌬️', choices:['fēng','féng','fěng','fèng'] },
+  { word:'火', pinyin:'huǒ', emoji:'🔥', choices:['huǒ','huō','huó','hǔo'] },
+  { word:'水', pinyin:'shuǐ', emoji:'💧', choices:['shuǐ','suǐ','shuí','shuì'] },
+  { word:'日', pinyin:'rì', emoji:'☀️', choices:['rì','rǐ','rī','lì'] },
+  { word:'月', pinyin:'yuè', emoji:'🌙', choices:['yuè','yǔe','yuě','yue'] },
+  { word:'星', pinyin:'xīng', emoji:'⭐', choices:['xīng','xíng','xǐng','xìng'] },
+  { word:'车', pinyin:'chē', emoji:'🚗', choices:['chē','cē','chě','chè'] },
+  { word:'船', pinyin:'chuán', emoji:'🚢', choices:['chuán','chuǎn','chuàn','cuán'] },
+  { word:'门', pinyin:'mén', emoji:'🚪', choices:['mén','mēn','mèn','měn'] },
+  { word:'窗', pinyin:'chuāng', emoji:'🪟', choices:['chuāng','chuáng','chuǎng','chuàng'] },
+  { word:'桌', pinyin:'zhuō', emoji:'🪑', choices:['zhuō','zuō','zhuó','zhuǒ'] },
+  { word:'书', pinyin:'shū', emoji:'📚', choices:['shū','sū','shú','shǔ'] },
+  { word:'笔', pinyin:'bǐ', emoji:'✏️', choices:['bǐ','bí','bì','pǐ'] },
+  { word:'球', pinyin:'qiú', emoji:'⚽', choices:['qiú','qiúe','qǔ','jiú'] }
 ];
 
 function pickOne(excludedWords = []) {
