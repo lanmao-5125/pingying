@@ -18,6 +18,18 @@ html,body{
 }
 #fx{position:fixed;inset:0;z-index:0;pointer-events:none}
 #celebration-layer{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden}
+.combo-banner{
+  position:absolute;left:50%;top:16%;transform:translateX(-50%);
+  padding:12px 20px;border-radius:999px;font-weight:900;
+  background:linear-gradient(90deg,#ffe66e,#ff4dd8,#36f7ff);
+  color:#1b1438;font-size:clamp(1.1rem,3vw,2rem);
+  box-shadow:0 0 24px #ffe66e99,0 0 40px #ff4dd866;
+  animation:banner-pop 850ms ease-out forwards;
+}
+.screen-flash{
+  position:absolute;inset:0;background:radial-gradient(circle,#ffffff88 0,#ffffff00 65%);
+  animation:screen-flash 420ms ease-out forwards;
+}
 
 .app{
   position:relative;
@@ -151,6 +163,16 @@ html,body{
 @keyframes firework-ring{
   0%{transform:translate(-50%,-50%) scale(.2);opacity:1}
   100%{transform:translate(-50%,-50%) scale(9);opacity:0}
+}
+@keyframes banner-pop{
+  0%{transform:translateX(-50%) scale(.5);opacity:0}
+  25%{transform:translateX(-50%) scale(1.08);opacity:1}
+  100%{transform:translateX(-50%) scale(1);opacity:0}
+}
+@keyframes screen-flash{
+  0%{opacity:0}
+  20%{opacity:1}
+  100%{opacity:0}
 }
 
 /* 平板/手机：改为一列，按钮更大，避免误触 */

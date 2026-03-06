@@ -112,35 +112,54 @@ function update(){
 function celebrate(){const st=document.querySelector('.stage');st.classList.add('pulse');setTimeout(()=>st.classList.remove('pulse'),450)}
 function warn(){const st=document.querySelector('.stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),350)}
 
-function comboCelebration(){
+function comboCelebration(combo){
   const layer = el.celebrationLayer;
   if (!layer) return;
 
+  const fireworkCount = combo >= 8 ? 8 : combo >= 5 ? 5 : 3;
+  const confettiCount = combo >= 8 ? 120 : combo >= 5 ? 72 : 48;
+
   // 烟花环
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < fireworkCount; i++) {
     const ring = document.createElement('div');
     ring.className = 'firework-ring';
-    ring.style.left = `${20 + Math.random() * 60}%`;
-    ring.style.top = `${20 + Math.random() * 45}%`;
-    ring.style.borderColor = ['#36f7ff','#ff4dd8','#ffe66e'][i % 3];
+    ring.style.left = `${10 + Math.random() * 80}%`;
+    ring.style.top = `${14 + Math.random() * 55}%`;
+    ring.style.borderColor = ['#36f7ff','#ff4dd8','#ffe66e','#65ffae','#7a7cff'][i % 5];
     ring.style.boxShadow = `0 0 18px ${ring.style.borderColor},0 0 32px ${ring.style.borderColor}`;
     layer.appendChild(ring);
-    setTimeout(() => ring.remove(), 650);
+    setTimeout(() => ring.remove(), 700);
   }
 
   // 彩带雨
-  for (let i = 0; i < 48; i++) {
+  for (let i = 0; i < confettiCount; i++) {
     const c = document.createElement('div');
     c.className = 'confetti';
     c.style.left = `${Math.random() * 100}%`;
-    c.style.top = `${10 + Math.random() * 25}%`;
+    c.style.top = `${6 + Math.random() * 30}%`;
     c.style.background = ['#36f7ff','#ff4dd8','#ffe66e','#65ffae','#7a7cff'][Math.floor(Math.random()*5)];
-    c.style.setProperty('--dx', `${(Math.random() - 0.5) * 260}px`);
-    c.style.setProperty('--dy', `${220 + Math.random() * 360}px`);
-    c.style.setProperty('--rot', `${Math.random() * 720 - 360}deg`);
-    c.style.animationDelay = `${Math.random() * 120}ms`;
+    c.style.setProperty('--dx', `${(Math.random() - 0.5) * (combo >= 8 ? 360 : 260)}px`);
+    c.style.setProperty('--dy', `${240 + Math.random() * (combo >= 8 ? 460 : 360)}px`);
+    c.style.setProperty('--rot', `${Math.random() * 900 - 450}deg`);
+    c.style.animationDelay = `${Math.random() * 140}ms`;
     layer.appendChild(c);
-    setTimeout(() => c.remove(), 1300);
+    setTimeout(() => c.remove(), 1500);
+  }
+
+  // 渐进式情绪价值：高连击专属反馈
+  if (combo >= 5) {
+    const banner = document.createElement('div');
+    banner.className = 'combo-banner';
+    banner.textContent = combo >= 8 ? `🔥 超神 ${combo} 连击！` : `⚡ ${combo} 连击，太厉害啦！`;
+    layer.appendChild(banner);
+    setTimeout(() => banner.remove(), 900);
+  }
+
+  if (combo >= 8) {
+    const flash = document.createElement('div');
+    flash.className = 'screen-flash';
+    layer.appendChild(flash);
+    setTimeout(() => flash.remove(), 450);
   }
 }
 
@@ -199,7 +218,7 @@ async function pick(btn, value, ans){
     const plus=s.combo>=3?15:10; s.score+=plus; s.combo+=1;
     el.feedback.textContent=`🎉 正确！+${plus} 分`;
     btn.classList.add('correct'); beep('ok'); celebrate();
-    if (s.combo >= 3) comboCelebration();
+    if (s.combo >= 3) comboCelebration(s.combo);
   } else {
     s.lives-=1; s.combo=0; s.weakPoints.push(ans);
     btn.classList.add('wrong');
