@@ -24,7 +24,11 @@ app.post('/api/ai/generate-question', async (req, res) => {
     const key = process.env.MOONSHOT_API_KEY;
     if (!key) return res.json({ ok: true, source: 'fallback', question: pickOne() });
 
-    const prompt = `你是儿童拼音老师。为${age}岁儿童生成1道拼音选择题，JSON格式返回：{"word":"汉字","pinyin":"带声调","emoji":"一个emoji","choices":["选项1","选项2","选项3","选项4"]}。\n要求：用常见字，选项包含1个正确答案，最多参考薄弱点：${weakPoints.join(',') || '无'}。仅返回JSON，不要额外文字。`;
+    const prompt = `你是儿童拼音老师。请生成1道适合${age}岁儿童的拼音选择题。
+严格只返回JSON对象，字段必须包含：word,pinyin,emoji,choices。
+choices必须是4个字符串且仅1个正确答案。
+可参考薄弱点：${weakPoints.join(',') || '无'}。
+不要输出markdown、不要解释、不要代码块。`;
 
     const r = await fetch('https://api.moonshot.cn/v1/chat/completions', {
       method: 'POST',
@@ -37,6 +41,9 @@ app.post('/api/ai/generate-question', async (req, res) => {
     });
     const data = await r.json();
     const text = data?.choices?.[0]?.message?.content || '{}';
+    if (!data?.choices?.[0]?.message?.content) {
+      console.warn('[AI] empty content, provider response=', JSON.stringify(data).slice(0, 500));
+    }
 
     let json = null;
     try {
