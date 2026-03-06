@@ -10,7 +10,8 @@
 html,body{
   margin:0;
   height:100%;
-  overflow:hidden;
+  overflow-x:hidden;
+  overflow-y:hidden;
   font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
   color:#f4fbff;
   background:radial-gradient(circle at 10% 10%,#1d2c78 0,#090f2a 35%,#070b1d 100%);
@@ -21,12 +22,12 @@ html,body{
   position:relative;
   z-index:1;
   width:min(1100px,95%);
-  height:100dvh;
+  min-height:100dvh;
   margin:0 auto;
-  padding:12px 0;
+  padding:10px 0;
   display:grid;
   grid-template-rows:auto 1fr auto;
-  gap:12px;
+  gap:10px;
 }
 .glass{background:linear-gradient(160deg,#ffffff1f,#ffffff0d);backdrop-filter:blur(8px);border-radius:22px}
 .neon-border{border:1px solid #ffffff40;box-shadow:0 0 0 1px #36f7ff30 inset,0 0 24px #36f7ff2f,0 0 40px #ff4dd81a}
@@ -136,11 +137,16 @@ html,body{
   .choice{min-height:86px;font-size:2rem}
 }
 @media (max-width:640px){
-  .app{width:min(96%,96%);padding:8px 0;gap:10px}
-  .hud,.stage{padding:14px 12px}
-  .btn{width:100%}
-  .actions{gap:8px;margin:12px 0 10px}
-  .hanzi{font-size:3.5rem}
-  .feedback{font-size:1.2rem;min-height:30px}
-  .choice{min-height:72px;font-size:1.8rem}
+  html,body{height:auto;min-height:100%;overflow-y:auto;}
+  .app{width:96%;min-height:100dvh;padding:10px 0 14px;gap:10px;grid-template-rows:auto auto auto}
+  .hud,.stage,.bottom{padding:14px 12px;border-radius:16px}
+  .chips{grid-template-columns:repeat(2,1fr);gap:8px}
+  .chip{padding:10px 8px;font-size:1rem}
+  .btn{width:100%;padding:12px 16px}
+  .actions{gap:8px;margin:10px 0}
+  .hanzi{font-size:3.2rem}
+  .feedback{font-size:1.15rem;min-height:28px}
+  .choice{min-height:68px;font-size:1.55rem;padding:12px 8px}
+  .progress-wrap{flex-direction:column;align-items:stretch;gap:6px}
+  #progressText{text-align:right;font-size:1rem}
 }

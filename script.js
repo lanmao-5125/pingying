@@ -1,5 +1,5 @@
 const totalRounds = 10;
-const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, q: null, weakPoints: [] };
+const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, q: null, weakPoints: [], recentWords: [] };
 const $ = id => document.getElementById(id);
 const el = {
   level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
@@ -19,7 +19,7 @@ function speak(text){
 async function aiQuestion(){
   const r = await fetch('/api/ai/generate-question', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ age:'3-7', weakPoints: s.weakPoints.slice(-3) })
+    body: JSON.stringify({ age:'3-7', weakPoints: s.weakPoints.slice(-3), recentWords: s.recentWords.slice(-4) })
   });
   const data = await r.json();
   return data.question;
@@ -45,14 +45,26 @@ function celebrate(){const st=document.querySelector('.stage');st.classList.add(
 function warn(){const st=document.querySelector('.stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),350)}
 
 async function render(){
-  s.locked=false; s.hinted=false; el.feedback.textContent=''; el.nextBtn.classList.add('hidden');
-  s.q = await aiQuestion();
-  el.emoji.textContent=s.q.emoji||'🧩'; el.word.textContent=s.q.word;
+  s.locked=true; s.hinted=false;
+  el.feedback.textContent='🛰️ AI正在生成下一题...';
+  el.nextBtn.classList.add('hidden');
   el.choices.innerHTML='';
+
+  const q = await aiQuestion();
+  s.q = q;
+  if (q?.word) {
+    s.recentWords.push(q.word);
+    s.recentWords = s.recentWords.slice(-6);
+  }
+
+  el.emoji.textContent=s.q.emoji||'🧩';
+  el.word.textContent=s.q.word;
+  el.feedback.textContent='';
   shuffle(s.q.choices).forEach(c=>{
     const b=document.createElement('button'); b.className='choice'; b.textContent=c;
     b.onclick=()=>pick(b,c,s.q.pinyin); el.choices.appendChild(b);
   });
+  s.locked=false;
   update();
 }
 
@@ -75,10 +87,15 @@ async function pick(btn, value, ans){
   el.nextBtn.classList.remove('hidden');
 }
 
-async function next(){ s.idx+=1; if(s.idx>=totalRounds){finish(true);return;} await render(); }
+async function next(){
+  if (s.locked) return;
+  s.idx+=1;
+  if(s.idx>=totalRounds){finish(true);return;}
+  await render();
+}
 function hint(){ if(s.hinted||s.locked)return; s.hinted=true; s.score=Math.max(0,s.score-2); const wrong=[...document.querySelectorAll('.choice')].filter(b=>b.textContent!==s.q.pinyin); if(wrong.length)wrong[Math.floor(Math.random()*wrong.length)].style.opacity=.25; el.feedback.textContent='💡 已排除一个错误答案（-2分）'; update(); }
 function finish(ok){ el.barFill.style.width='100%'; el.progressText.textContent=`${totalRounds} / ${totalRounds}`; el.resultModal.classList.remove('hidden'); if(ok){el.resultTitle.textContent='🏆 星舰通关成功！'; el.resultDesc.textContent=`总分 ${s.score}，你是拼音银河小英雄！`;} else {el.resultTitle.textContent='🌟 差一点点就成功啦'; el.resultDesc.textContent=`本次得分 ${s.score}，再挑战一次会更强！`;} }
-async function restart(){ s.idx=0;s.score=0;s.lives=3;s.combo=0;s.weakPoints=[]; el.resultModal.classList.add('hidden'); await render(); }
+async function restart(){ s.idx=0;s.score=0;s.lives=3;s.combo=0;s.weakPoints=[];s.recentWords=[]; el.resultModal.classList.add('hidden'); await render(); }
 
 el.nextBtn.onclick=next; el.restartBtn.onclick=restart;
 el.speakBtn.onclick=()=>{ if(s.q) speak(`${s.q.word}，请选出正确拼音`) };
