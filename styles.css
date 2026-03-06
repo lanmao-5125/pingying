@@ -81,7 +81,7 @@ html,body{
 }
 .chip b{font-size:1.25em}
 
-.stage{padding:20px 20px;text-align:center;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.stage{position:relative;padding:20px 20px;text-align:center;min-height:0;display:flex;flex-direction:column;justify-content:center}
 .stage-top{display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap}
 .avatar{font-size:clamp(3rem,5vw,4.6rem);filter:drop-shadow(0 0 10px #36f7ffaa)}
 .label{margin:0;color:#cce8ff;font-size:clamp(1rem,1.5vw,1.2rem)}
@@ -134,22 +134,25 @@ html,body{
 .choice.wrong{background:#4f1322;border-color:#ff9db2;box-shadow:0 0 18px #ff5a7a66}
 
 .reward-card{
-  margin:10px auto 4px;
-  width:min(320px,92%);
-  background:linear-gradient(145deg,#ffffff24,#ffffff12);
-  border:1px solid #ffffff40;
-  border-radius:16px;
-  padding:8px;
-  box-shadow:0 0 20px #ffe66e55;
-  animation:pulse .45s ease;
+  position:absolute;
+  right:14px;
+  top:12px;
+  width:min(240px,58vw);
+  background:linear-gradient(145deg,#ffffff26,#ffffff14);
+  border:1px solid #ffffff55;
+  border-radius:14px;
+  padding:7px;
+  box-shadow:0 0 18px #ffe66e66;
+  animation:reward-pop .45s ease;
+  z-index:3;
 }
 .reward-card img{
   width:100%;
-  height:160px;
+  height:110px;
   object-fit:cover;
-  border-radius:12px;
+  border-radius:10px;
 }
-.reward-card p{margin:8px 4px 2px;font-weight:800;color:#fff9c4}
+.reward-card p{margin:6px 4px 2px;font-weight:800;color:#fff9c4;font-size:.92rem;line-height:1.25}
 
 .feedback{
   min-height:36px;
@@ -180,6 +183,7 @@ html,body{
 .shake{animation:shake .35s ease}
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes reward-pop{0%{transform:translateY(-8px) scale(.92);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
 
 .confetti{
   position:absolute;
@@ -247,4 +251,6 @@ html,body{
   .progress-wrap{flex-direction:column;align-items:stretch;gap:6px}
   #progressText{text-align:right;font-size:1rem}
   .album-grid{grid-template-columns:repeat(3,minmax(70px,1fr))}
+  .reward-card{left:50%;right:auto;top:10px;transform:translateX(-50%);width:min(250px,82vw)}
+  .reward-card img{height:96px}
 }

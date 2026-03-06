@@ -45,6 +45,7 @@ const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, 
 let nextQPromise = null;
 let nextQCache = null;
 let autoNextTimer = null;
+let rewardHideTimer = null;
 
 const rewardMedia = {
   '猫':'🐱','狗':'🐶','鱼':'🐟','鸟':'🐦','牛':'🐮','羊':'🐑','马':'🐴','兔':'🐰','花':'🌸','草':'🌿','树':'🌳',
@@ -146,16 +147,19 @@ function renderAlbum(){
 
 function showReward(word){
   if (!el.rewardCard) return;
+  clearTimeout(rewardHideTimer);
   el.rewardImg.src = makeRewardImage(word);
   el.rewardText.textContent = `太棒啦！${word}答对了，继续冲呀！`;
   el.rewardCard.classList.remove('hidden');
   albumUnlocked.add(word);
   localStorage.setItem('albumUnlocked', JSON.stringify([...albumUnlocked]));
   renderAlbum();
+  rewardHideTimer = setTimeout(hideReward, 950);
 }
 
 function hideReward(){
   if (!el.rewardCard) return;
+  clearTimeout(rewardHideTimer);
   el.rewardCard.classList.add('hidden');
 }
 
