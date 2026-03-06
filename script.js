@@ -50,7 +50,8 @@ const el = {
   emoji: $('emoji'), word: $('word'), choices: $('choices'), feedback: $('feedback'),
   nextBtn: $('nextBtn'), speakBtn: $('speakBtn'), hintBtn: $('hintBtn'),
   barFill: $('barFill'), progressText: $('progressText'), mission: $('mission'),
-  resultModal: $('resultModal'), resultTitle: $('resultTitle'), resultDesc: $('resultDesc'), restartBtn: $('restartBtn')
+  resultModal: $('resultModal'), resultTitle: $('resultTitle'), resultDesc: $('resultDesc'), restartBtn: $('restartBtn'),
+  celebrationLayer: $('celebration-layer')
 };
 
 function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
@@ -111,6 +112,38 @@ function update(){
 function celebrate(){const st=document.querySelector('.stage');st.classList.add('pulse');setTimeout(()=>st.classList.remove('pulse'),450)}
 function warn(){const st=document.querySelector('.stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),350)}
 
+function comboCelebration(){
+  const layer = el.celebrationLayer;
+  if (!layer) return;
+
+  // 烟花环
+  for (let i = 0; i < 3; i++) {
+    const ring = document.createElement('div');
+    ring.className = 'firework-ring';
+    ring.style.left = `${20 + Math.random() * 60}%`;
+    ring.style.top = `${20 + Math.random() * 45}%`;
+    ring.style.borderColor = ['#36f7ff','#ff4dd8','#ffe66e'][i % 3];
+    ring.style.boxShadow = `0 0 18px ${ring.style.borderColor},0 0 32px ${ring.style.borderColor}`;
+    layer.appendChild(ring);
+    setTimeout(() => ring.remove(), 650);
+  }
+
+  // 彩带雨
+  for (let i = 0; i < 48; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = `${Math.random() * 100}%`;
+    c.style.top = `${10 + Math.random() * 25}%`;
+    c.style.background = ['#36f7ff','#ff4dd8','#ffe66e','#65ffae','#7a7cff'][Math.floor(Math.random()*5)];
+    c.style.setProperty('--dx', `${(Math.random() - 0.5) * 260}px`);
+    c.style.setProperty('--dy', `${220 + Math.random() * 360}px`);
+    c.style.setProperty('--rot', `${Math.random() * 720 - 360}deg`);
+    c.style.animationDelay = `${Math.random() * 120}ms`;
+    layer.appendChild(c);
+    setTimeout(() => c.remove(), 1300);
+  }
+}
+
 async function render(){
   try{
     s.locked=true; s.hinted=false;
@@ -166,6 +199,7 @@ async function pick(btn, value, ans){
     const plus=s.combo>=3?15:10; s.score+=plus; s.combo+=1;
     el.feedback.textContent=`🎉 正确！+${plus} 分`;
     btn.classList.add('correct'); beep('ok'); celebrate();
+    if (s.combo >= 3) comboCelebration();
   } else {
     s.lives-=1; s.combo=0; s.weakPoints.push(ans);
     btn.classList.add('wrong');
