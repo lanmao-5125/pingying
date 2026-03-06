@@ -1,23 +1,32 @@
-# 拼音闯关小勇士
+# 拼音星际闯关（AI版）
 
-一个面向 **3-7 岁小朋友** 的拼音闯关小游戏：
-- 酷炫星空+玻璃拟态 UI
-- 10 关拼音识别题目
-- 分数、生命值、通关进度
-- Web Speech API 语音提示（支持浏览器时）
+适合 3-7 岁小朋友的拼音闯关小游戏，已接入 Kimi 2.5 能力：
+- AI 动态出题（按薄弱点调整）
+- AI 鼓励式反馈
+- 酷炫科幻风 UI + 连击 + 提示机制
 
 ## 本地运行
 
-直接打开 `index.html` 即可运行。
+```bash
+npm install
+cp .env.example .env
+npm start
+```
 
-## 技术栈
+打开 `http://localhost:3000`
 
-- HTML + CSS + Vanilla JavaScript
-- 无需后端
+## 环境变量
 
-## 后续可扩展
+创建 `.env`：
 
-- 按声母/韵母分类关卡
-- 二声三声专项训练
-- 奖励贴纸系统
-- 家长模式（学习报告）
+```env
+PORT=3000
+MOONSHOT_API_KEY=你的_key
+```
+
+> 未配置 `MOONSHOT_API_KEY` 时会自动使用内置 fallback 题库，不影响基本游玩。
+
+## 主要接口
+
+- `POST /api/ai/generate-question`
+- `POST /api/ai/evaluate-answer`
