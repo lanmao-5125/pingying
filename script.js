@@ -1,5 +1,6 @@
 const totalRounds = 10;
 const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, q: null, weakPoints: [], recentWords: [] };
+let nextQPromise = null;
 const $ = id => document.getElementById(id);
 const el = {
   level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
@@ -23,6 +24,9 @@ async function aiQuestion(){
   });
   const data = await r.json();
   return data.question;
+}
+function prefetchNextQuestion(){
+  nextQPromise = aiQuestion().catch(() => null);
 }
 async function aiFeedback(correct, target){
   try{
@@ -50,8 +54,9 @@ async function render(){
   el.nextBtn.classList.add('hidden');
   el.choices.innerHTML='';
 
-  const q = await aiQuestion();
-  s.q = q;
+  const q = nextQPromise ? await nextQPromise : await aiQuestion();
+  nextQPromise = null;
+  s.q = q || { word:'猫', pinyin:'māo', emoji:'🐱', choices:['māo','niú','gǒu','yú'] };
   if (q?.word) {
     s.recentWords.push(q.word);
     s.recentWords = s.recentWords.slice(-6);
@@ -84,6 +89,7 @@ async function pick(btn, value, ans){
   }
   update();
   if(s.lives<=0){setTimeout(()=>finish(false),500);return;}
+  prefetchNextQuestion();
   el.nextBtn.classList.remove('hidden');
 }
 
@@ -95,7 +101,7 @@ async function next(){
 }
 function hint(){ if(s.hinted||s.locked)return; s.hinted=true; s.score=Math.max(0,s.score-2); const wrong=[...document.querySelectorAll('.choice')].filter(b=>b.textContent!==s.q.pinyin); if(wrong.length)wrong[Math.floor(Math.random()*wrong.length)].style.opacity=.25; el.feedback.textContent='💡 已排除一个错误答案（-2分）'; update(); }
 function finish(ok){ el.barFill.style.width='100%'; el.progressText.textContent=`${totalRounds} / ${totalRounds}`; el.resultModal.classList.remove('hidden'); if(ok){el.resultTitle.textContent='🏆 星舰通关成功！'; el.resultDesc.textContent=`总分 ${s.score}，你是拼音银河小英雄！`;} else {el.resultTitle.textContent='🌟 差一点点就成功啦'; el.resultDesc.textContent=`本次得分 ${s.score}，再挑战一次会更强！`;} }
-async function restart(){ s.idx=0;s.score=0;s.lives=3;s.combo=0;s.weakPoints=[];s.recentWords=[]; el.resultModal.classList.add('hidden'); await render(); }
+async function restart(){ s.idx=0;s.score=0;s.lives=3;s.combo=0;s.weakPoints=[];s.recentWords=[]; el.resultModal.classList.add('hidden'); prefetchNextQuestion(); await render(); }
 
 el.nextBtn.onclick=next; el.restartBtn.onclick=restart;
 el.speakBtn.onclick=()=>{ if(s.q) speak(`${s.q.word}，请选出正确拼音`) };
@@ -103,4 +109,5 @@ el.hintBtn.onclick=hint;
 
 (function(){const c=document.getElementById('fx'),ctx=c.getContext('2d');let w,h,stars=[];const rs=()=>{w=c.width=innerWidth;h=c.height=innerHeight;stars=Array.from({length:90},()=>({x:Math.random()*w,y:Math.random()*h,z:Math.random()*1.5+0.3}))};addEventListener('resize',rs);rs();(function lp(){ctx.clearRect(0,0,w,h);for(const st of stars){st.y+=st.z;if(st.y>h){st.y=0;st.x=Math.random()*w}ctx.fillStyle=`rgba(120,220,255,${0.25+st.z/2})`;ctx.fillRect(st.x,st.y,st.z*2,st.z*2)}requestAnimationFrame(lp)})();})();
 
+prefetchNextQuestion();
 render();

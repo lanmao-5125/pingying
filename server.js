@@ -35,6 +35,9 @@ choices必须是4个字符串且仅1个正确答案。
 最近已出过的字：${recentWords.join(',') || '无'}，尽量不要重复这些字。
 不要输出markdown、不要解释、不要代码块。`;
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+
     const r = await fetch('https://api.moonshot.cn/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
@@ -42,8 +45,10 @@ choices必须是4个字符串且仅1个正确答案。
         model: 'kimi-k2.5',
         temperature: 1,
         messages: [{ role: 'user', content: prompt }]
-      })
-    });
+      }),
+      signal: controller.signal
+    }).finally(() => clearTimeout(timer));
+
     const data = await r.json();
     const text = data?.choices?.[0]?.message?.content || '{}';
     if (!data?.choices?.[0]?.message?.content) {
