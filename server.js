@@ -35,7 +35,7 @@ choices必须是4个字符串且仅1个正确答案。
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: 'kimi-k2.5',
-        temperature: 0.7,
+        temperature: 1,
         messages: [{ role: 'user', content: prompt }]
       })
     });
