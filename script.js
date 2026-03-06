@@ -45,6 +45,16 @@ const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, 
 let nextQPromise = null;
 let nextQCache = null;
 let autoNextTimer = null;
+
+const rewardMedia = {
+  '猫': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
+  '狗': 'https://media.giphy.com/media/26BRQTezZrKak4BeE/giphy.gif',
+  '鱼': 'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif',
+  '鸟': 'https://media.giphy.com/media/l0MYC0LajbaPoEADu/giphy.gif',
+  '兔': 'https://media.giphy.com/media/QvBoMEcQ7DQXK/giphy.gif',
+  '花': 'https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif',
+  '车': 'https://media.giphy.com/media/3orieZKpEaP6qUqOEo/giphy.gif'
+};
 const $ = id => document.getElementById(id);
 const el = {
   level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
@@ -52,7 +62,7 @@ const el = {
   nextBtn: $('nextBtn'), speakBtn: $('speakBtn'), hintBtn: $('hintBtn'),
   barFill: $('barFill'), progressText: $('progressText'), mission: $('mission'),
   resultModal: $('resultModal'), resultTitle: $('resultTitle'), resultDesc: $('resultDesc'), restartBtn: $('restartBtn'),
-  celebrationLayer: $('celebration-layer')
+  celebrationLayer: $('celebration-layer'), rewardCard: $('rewardCard'), rewardImg: $('rewardImg'), rewardText: $('rewardText')
 };
 
 function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
@@ -112,6 +122,19 @@ function update(){
 }
 function celebrate(){const st=document.querySelector('.stage');st.classList.add('pulse');setTimeout(()=>st.classList.remove('pulse'),450)}
 function warn(){const st=document.querySelector('.stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),350)}
+
+function showReward(word){
+  const img = rewardMedia[word] || 'https://media.giphy.com/media/13borq7Zo2kulO/giphy.gif';
+  if (!el.rewardCard) return;
+  el.rewardImg.src = img;
+  el.rewardText.textContent = `太棒啦！${word}答对了，继续冲呀！`;
+  el.rewardCard.classList.remove('hidden');
+}
+
+function hideReward(){
+  if (!el.rewardCard) return;
+  el.rewardCard.classList.add('hidden');
+}
 
 function comboCelebration(combo){
   const layer = el.celebrationLayer;
@@ -194,6 +217,7 @@ function comboCelebration(combo){
 async function render(){
   try{
     s.locked=true; s.hinted=false;
+    hideReward();
     el.nextBtn.classList.add('hidden');
     el.choices.innerHTML='';
 
@@ -246,8 +270,10 @@ async function pick(btn, value, ans){
     const plus=s.combo>=3?15:10; s.score+=plus; s.combo+=1;
     el.feedback.textContent=`🎉 正确！+${plus} 分`;
     btn.classList.add('correct'); beep('ok'); celebrate();
+    showReward(s.q.word);
     if (s.combo >= 3) comboCelebration(s.combo);
   } else {
+    hideReward();
     s.lives-=1; s.combo=0; s.weakPoints.push(ans);
     btn.classList.add('wrong');
     el.feedback.textContent=`💡 正确答案是 ${ans}`;
@@ -270,7 +296,7 @@ async function pick(btn, value, ans){
   if (correct) {
     el.nextBtn.classList.add('hidden');
     clearTimeout(autoNextTimer);
-    autoNextTimer = setTimeout(() => { next(); }, 520);
+    autoNextTimer = setTimeout(() => { next(); }, 1100);
   } else {
     el.nextBtn.classList.remove('hidden');
   }
