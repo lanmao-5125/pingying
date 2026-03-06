@@ -53,13 +53,17 @@ function prefetchNextQuestion(){
     .catch(() => null);
 }
 async function aiFeedback(correct, target){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 800);
   try{
     const r = await fetch('/api/ai/evaluate-answer', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ correct, target })
+      body: JSON.stringify({ correct, target }),
+      signal: controller.signal
     });
     return (await r.json()).text || (correct ? '答对啦！' : `正确答案是 ${target}`);
   }catch{ return correct ? '答对啦！' : `正确答案是 ${target}`; }
+  finally { clearTimeout(timer); }
 }
 function beep(type='ok'){
   try{const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination); o.frequency.value=type==='ok'?780:260; g.gain.value=.001; g.gain.exponentialRampToValueAtTime(.08,ctx.currentTime+.01); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.2); o.start(); o.stop(ctx.currentTime+.22);}catch{}
@@ -121,19 +125,33 @@ async function pick(btn, value, ans){
   if(s.locked)return; s.locked=true;
   const all=[...document.querySelectorAll('.choice')];
   all.forEach(b=>{if(b.textContent===ans)b.classList.add('correct')});
-  if(value===ans){
+
+  const correct = value===ans;
+  if(correct){
     const plus=s.combo>=3?15:10; s.score+=plus; s.combo+=1;
-    el.feedback.textContent=await aiFeedback(true, ans);
-    btn.classList.add('correct'); beep('ok'); celebrate(); speak(el.feedback.textContent);
+    el.feedback.textContent=`🎉 正确！+${plus} 分`;
+    btn.classList.add('correct'); beep('ok'); celebrate();
   } else {
     s.lives-=1; s.combo=0; s.weakPoints.push(ans);
     btn.classList.add('wrong');
-    el.feedback.textContent=await aiFeedback(false, ans);
-    beep('bad'); warn(); speak(el.feedback.textContent);
+    el.feedback.textContent=`💡 正确答案是 ${ans}`;
+    beep('bad'); warn();
   }
+
   update();
-  if(s.lives<=0){setTimeout(()=>finish(false),500);return;}
+  if(s.lives<=0){setTimeout(()=>finish(false),500); s.locked=false; return;}
+
+  // 先解锁和显示下一关，确保绝不卡
+  s.locked=false;
   el.nextBtn.classList.remove('hidden');
+
+  // 再异步刷新成AI鼓励文案（不阻塞交互）
+  aiFeedback(correct, ans).then(txt => {
+    if (txt) {
+      el.feedback.textContent = txt;
+      speak(txt);
+    }
+  }).catch(()=>{});
 }
 
 async function next(){
