@@ -61,6 +61,7 @@ html,body{
 .neon-border{border:1px solid #ffffff40;box-shadow:0 0 0 1px #36f7ff30 inset,0 0 24px #36f7ff2f,0 0 40px #ff4dd81a}
 
 .hud{padding:20px 24px}
+#albumBtn{margin-top:10px}
 .hud h1{
   margin:0 0 14px;
   font-size:clamp(1.6rem,2.5vw,2.2rem);
@@ -170,6 +171,10 @@ html,body{
 .modal-card{width:min(520px,94%);padding:28px;text-align:center}
 .modal-card h2{font-size:clamp(1.8rem,3vw,2.3rem);margin:.2em 0}
 .modal-card p{font-size:clamp(1.1rem,2vw,1.35rem);line-height:1.6}
+.album-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:10px;margin:12px 0 14px}
+.album-item{padding:8px;border-radius:12px;background:#ffffff1a;border:1px solid #ffffff33;text-align:center;font-weight:800}
+.album-item.locked{opacity:.35;filter:grayscale(1)}
+.album-item .icon{font-size:28px;display:block}
 
 .pulse{animation:pulse .5s ease}
 .shake{animation:shake .35s ease}
@@ -241,4 +246,5 @@ html,body{
   .choice{min-height:68px;font-size:1.55rem;padding:12px 8px}
   .progress-wrap{flex-direction:column;align-items:stretch;gap:6px}
   #progressText{text-align:right;font-size:1rem}
+  .album-grid{grid-template-columns:repeat(3,minmax(70px,1fr))}
 }

@@ -19,6 +19,7 @@
         <div class="chip">连击 <b id="combo">0</b></div>
         <div class="chip">生命 <b id="lives">3</b></div>
       </div>
+      <button id="albumBtn" class="btn">🏅 我的收集册</button>
     </header>
 
     <section class="stage glass neon-border">
@@ -58,6 +59,14 @@
       <h2 id="resultTitle"></h2>
       <p id="resultDesc"></p>
       <button class="btn primary" id="restartBtn">再来一局</button>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="albumModal">
+    <div class="modal-card glass neon-border">
+      <h2>🏅 奖励收集册</h2>
+      <div id="albumGrid" class="album-grid"></div>
+      <button class="btn" id="closeAlbumBtn">关闭</button>
     </div>
   </div>
 

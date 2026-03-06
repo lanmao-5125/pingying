@@ -47,14 +47,12 @@ let nextQCache = null;
 let autoNextTimer = null;
 
 const rewardMedia = {
-  '猫': 'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
-  '狗': 'https://media.giphy.com/media/26BRQTezZrKak4BeE/giphy.gif',
-  '鱼': 'https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif',
-  '鸟': 'https://media.giphy.com/media/l0MYC0LajbaPoEADu/giphy.gif',
-  '兔': 'https://media.giphy.com/media/QvBoMEcQ7DQXK/giphy.gif',
-  '花': 'https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif',
-  '车': 'https://media.giphy.com/media/3orieZKpEaP6qUqOEo/giphy.gif'
+  '猫':'🐱','狗':'🐶','鱼':'🐟','鸟':'🐦','牛':'🐮','羊':'🐑','马':'🐴','兔':'🐰','花':'🌸','草':'🌿','树':'🌳',
+  '山':'⛰️','河':'🏞️','云':'☁️','雨':'🌧️','雪':'❄️','风':'🌬️','火':'🔥','水':'💧','日':'☀️','月':'🌙','星':'⭐',
+  '车':'🚗','船':'🚢','门':'🚪','窗':'🪟','桌':'🪑','书':'📚','笔':'✏️','球':'⚽','米':'🍚','面':'🍜','果':'🍎',
+  '茶':'🍵','手':'✋','足':'🦶','眼':'👀','耳':'👂','口':'👄','鼻':'👃'
 };
+const albumUnlocked = new Set(JSON.parse(localStorage.getItem('albumUnlocked') || '[]'));
 const $ = id => document.getElementById(id);
 const el = {
   level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
@@ -62,7 +60,8 @@ const el = {
   nextBtn: $('nextBtn'), speakBtn: $('speakBtn'), hintBtn: $('hintBtn'),
   barFill: $('barFill'), progressText: $('progressText'), mission: $('mission'),
   resultModal: $('resultModal'), resultTitle: $('resultTitle'), resultDesc: $('resultDesc'), restartBtn: $('restartBtn'),
-  celebrationLayer: $('celebration-layer'), rewardCard: $('rewardCard'), rewardImg: $('rewardImg'), rewardText: $('rewardText')
+  celebrationLayer: $('celebration-layer'), rewardCard: $('rewardCard'), rewardImg: $('rewardImg'), rewardText: $('rewardText'),
+  albumBtn: $('albumBtn'), albumModal: $('albumModal'), albumGrid: $('albumGrid'), closeAlbumBtn: $('closeAlbumBtn')
 };
 
 function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
@@ -123,12 +122,36 @@ function update(){
 function celebrate(){const st=document.querySelector('.stage');st.classList.add('pulse');setTimeout(()=>st.classList.remove('pulse'),450)}
 function warn(){const st=document.querySelector('.stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),350)}
 
+function makeRewardImage(word){
+  const icon = rewardMedia[word] || '🌟';
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='360'>
+    <defs><linearGradient id='g' x1='0' x2='1'><stop stop-color='#36f7ff'/><stop offset='1' stop-color='#ff4dd8'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <circle cx='540' cy='70' r='40' fill='#ffe66e88'/><circle cx='80' cy='300' r='56' fill='#ffffff22'/>
+    <text x='50%' y='52%' text-anchor='middle' font-size='120'>${icon}</text>
+    <text x='50%' y='82%' text-anchor='middle' font-size='56' fill='#fff' font-family='PingFang SC, Microsoft YaHei'>${word}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function renderAlbum(){
+  if (!el.albumGrid) return;
+  const words = [...new Set(localBank.map(q => q.word))];
+  el.albumGrid.innerHTML = words.map(w => {
+    const unlocked = albumUnlocked.has(w);
+    const icon = rewardMedia[w] || '🌟';
+    return `<div class="album-item ${unlocked ? '' : 'locked'}"><span class="icon">${icon}</span><span>${unlocked ? w : '???'}</span></div>`;
+  }).join('');
+}
+
 function showReward(word){
-  const img = rewardMedia[word] || 'https://media.giphy.com/media/13borq7Zo2kulO/giphy.gif';
   if (!el.rewardCard) return;
-  el.rewardImg.src = img;
+  el.rewardImg.src = makeRewardImage(word);
   el.rewardText.textContent = `太棒啦！${word}答对了，继续冲呀！`;
   el.rewardCard.classList.remove('hidden');
+  albumUnlocked.add(word);
+  localStorage.setItem('albumUnlocked', JSON.stringify([...albumUnlocked]));
+  renderAlbum();
 }
 
 function hideReward(){
@@ -316,8 +339,11 @@ async function restart(){ clearTimeout(autoNextTimer); s.idx=0;s.score=0;s.lives
 el.nextBtn.onclick=next; el.restartBtn.onclick=restart;
 el.speakBtn.onclick=()=>{ if(s.q) speak(`${s.q.word}，请选出正确拼音`) };
 el.hintBtn.onclick=hint;
+el.albumBtn.onclick=()=>{ renderAlbum(); el.albumModal.classList.remove('hidden'); };
+el.closeAlbumBtn.onclick=()=>{ el.albumModal.classList.add('hidden'); };
 
 (function(){const c=document.getElementById('fx'),ctx=c.getContext('2d');let w,h,stars=[];const rs=()=>{w=c.width=innerWidth;h=c.height=innerHeight;stars=Array.from({length:90},()=>({x:Math.random()*w,y:Math.random()*h,z:Math.random()*1.5+0.3}))};addEventListener('resize',rs);rs();(function lp(){ctx.clearRect(0,0,w,h);for(const st of stars){st.y+=st.z;if(st.y>h){st.y=0;st.x=Math.random()*w}ctx.fillStyle=`rgba(120,220,255,${0.25+st.z/2})`;ctx.fillRect(st.x,st.y,st.z*2,st.z*2)}requestAnimationFrame(lp)})();})();
 
+renderAlbum();
 prefetchNextQuestion();
 render();
