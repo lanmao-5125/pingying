@@ -37,10 +37,28 @@ app.post('/api/ai/generate-question', async (req, res) => {
     });
     const data = await r.json();
     const text = data?.choices?.[0]?.message?.content || '{}';
-    const json = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0] || '{}');
-    if (!json.word || !json.pinyin || !Array.isArray(json.choices)) throw new Error('bad json');
+
+    let json = null;
+    try {
+      const raw = text.match(/\{[\s\S]*\}/)?.[0] || '{}';
+      json = JSON.parse(raw);
+    } catch {
+      json = null;
+    }
+
+    if (!json || !json.word || !json.pinyin || !Array.isArray(json.choices) || json.choices.length < 2) {
+      console.warn('[AI] bad json, fallback. raw=', text?.slice?.(0, 400));
+      return res.json({ ok: true, source: 'fallback', question: pickOne() });
+    }
+
+    json.choices = json.choices.slice(0, 4);
+    while (json.choices.length < 4) {
+      json.choices.push(pickOne().pinyin);
+    }
+
     return res.json({ ok: true, source: 'kimi', question: json });
   } catch (e) {
+    console.warn('[AI] request error, fallback:', e?.message || e);
     return res.json({ ok: true, source: 'fallback', question: pickOne() });
   }
 });
