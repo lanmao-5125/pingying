@@ -3,44 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>拼音闯关小勇士</title>
+  <title>拼音星际闯关</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="bg-stars"></div>
+  <canvas id="fx"></canvas>
+
   <main class="app">
-    <header class="topbar glass">
-      <h1>🌈 拼音闯关小勇士</h1>
-      <div class="stats">
-        <span>关卡 <b id="level">1</b></span>
-        <span>⭐ 分数 <b id="score">0</b></span>
-        <span>❤️ 生命 <b id="lives">3</b></span>
+    <header class="hud glass neon-border">
+      <h1>🚀 拼音星际闯关</h1>
+      <div class="chips">
+        <div class="chip">关卡 <b id="level">1</b></div>
+        <div class="chip">得分 <b id="score">0</b></div>
+        <div class="chip">连击 <b id="combo">0</b></div>
+        <div class="chip">生命 <b id="lives">3</b></div>
       </div>
     </header>
 
-    <section class="card glass">
-      <p class="tip" id="tip">听声音，选出正确拼音！</p>
-      <div class="challenge">
-        <div class="emoji" id="emoji">🐱</div>
-        <div class="word" id="word">猫</div>
+    <section class="stage glass neon-border">
+      <div class="stage-top">
+        <div class="avatar" id="emoji">🛸</div>
+        <div>
+          <p class="label">识别汉字对应拼音</p>
+          <div class="hanzi" id="word">猫</div>
+        </div>
       </div>
-      <button class="speak-btn" id="speakBtn">🔊 读给我听</button>
+
+      <div class="actions">
+        <button id="speakBtn" class="btn primary">🔊 播放题目</button>
+        <button id="hintBtn" class="btn">💡 提示（-2分）</button>
+      </div>
+
       <div class="choices" id="choices"></div>
-      <p class="feedback" id="feedback"></p>
-      <button class="next-btn hidden" id="nextBtn">下一关 ➜</button>
+      <p id="feedback" class="feedback"></p>
+      <button id="nextBtn" class="btn primary hidden">下一关 ➜</button>
     </section>
 
-    <section class="progress glass">
-      <div class="bar"><div class="bar-fill" id="barFill"></div></div>
-      <p>通关进度：<span id="progressText">0 / 10</span></p>
+    <section class="bottom glass neon-border">
+      <div class="progress-wrap">
+        <div class="progress"><div class="progress-fill" id="barFill"></div></div>
+        <span id="progressText">0 / 10</span>
+      </div>
+      <div class="mission" id="mission">任务：连续答对 3 题触发超能连击</div>
     </section>
   </main>
 
   <div class="modal hidden" id="resultModal">
-    <div class="modal-content glass">
+    <div class="modal-card glass neon-border">
       <h2 id="resultTitle"></h2>
       <p id="resultDesc"></p>
-      <button id="restartBtn">再玩一次</button>
+      <button class="btn primary" id="restartBtn">再来一局</button>
     </div>
   </div>
 

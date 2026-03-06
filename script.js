@@ -11,139 +11,133 @@ const questions = [
   { word: '水', pinyin: 'shuǐ', emoji: '💧', choices: ['shuǐ', 'shǒu', 'sǔn', 'shí'] }
 ];
 
-const state = { idx: 0, score: 0, lives: 3, locked: false };
-
+const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false };
+const $ = id => document.getElementById(id);
 const el = {
-  level: document.getElementById('level'),
-  score: document.getElementById('score'),
-  lives: document.getElementById('lives'),
-  emoji: document.getElementById('emoji'),
-  word: document.getElementById('word'),
-  choices: document.getElementById('choices'),
-  feedback: document.getElementById('feedback'),
-  nextBtn: document.getElementById('nextBtn'),
-  speakBtn: document.getElementById('speakBtn'),
-  barFill: document.getElementById('barFill'),
-  progressText: document.getElementById('progressText'),
-  resultModal: document.getElementById('resultModal'),
-  resultTitle: document.getElementById('resultTitle'),
-  resultDesc: document.getElementById('resultDesc'),
-  restartBtn: document.getElementById('restartBtn')
+  level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
+  emoji: $('emoji'), word: $('word'), choices: $('choices'), feedback: $('feedback'),
+  nextBtn: $('nextBtn'), speakBtn: $('speakBtn'), hintBtn: $('hintBtn'),
+  barFill: $('barFill'), progressText: $('progressText'), mission: $('mission'),
+  resultModal: $('resultModal'), resultTitle: $('resultTitle'), resultDesc: $('resultDesc'), restartBtn: $('restartBtn')
 };
 
-function shuffle(arr) {
-  return arr.map(v => ({ v, r: Math.random() })).sort((a, b) => a.r - b.r).map(x => x.v);
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function speak(text){
+  if(!window.speechSynthesis)return;
+  const msg=new SpeechSynthesisUtterance(text);
+  msg.lang='zh-CN'; msg.rate=.9;
+  speechSynthesis.cancel(); speechSynthesis.speak(msg);
 }
-
-function speak(text) {
-  if (!window.speechSynthesis) return;
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = 'zh-CN';
-  msg.rate = 0.9;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(msg);
+function beep(type='ok'){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='sine';
+    o.frequency.value = type==='ok'?780:260;
+    g.gain.value=.001; g.gain.exponentialRampToValueAtTime(.08,ctx.currentTime+.01);
+    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.2);
+    o.start(); o.stop(ctx.currentTime+.22);
+  }catch{}
 }
-
-function updateHeader() {
-  el.level.textContent = state.idx + 1;
-  el.score.textContent = state.score;
-  el.lives.textContent = state.lives;
-  const done = state.idx;
-  const total = questions.length;
-  el.barFill.style.width = `${(done / total) * 100}%`;
-  el.progressText.textContent = `${done} / ${total}`;
+function update(){
+  el.level.textContent=s.idx+1; el.score.textContent=s.score;
+  el.lives.textContent=s.lives; el.combo.textContent=s.combo;
+  el.barFill.style.width=`${(s.idx/questions.length)*100}%`;
+  el.progressText.textContent=`${s.idx} / ${questions.length}`;
+  el.mission.textContent = s.combo>=3 ? '⚡ 超能连击已激活：答对额外加分！' : '任务：连续答对 3 题触发超能连击';
 }
-
-function renderQuestion() {
-  const q = questions[state.idx];
-  state.locked = false;
-  el.feedback.textContent = '';
-  el.nextBtn.classList.add('hidden');
-
-  el.emoji.textContent = q.emoji;
-  el.word.textContent = q.word;
-  el.choices.innerHTML = '';
-
-  shuffle(q.choices).forEach(choice => {
-    const btn = document.createElement('button');
-    btn.className = 'choice';
-    btn.textContent = choice;
-    btn.onclick = () => selectChoice(btn, choice, q.pinyin);
-    el.choices.appendChild(btn);
+function celebrate(){
+  const stage=document.querySelector('.stage');
+  stage.classList.add('pulse'); setTimeout(()=>stage.classList.remove('pulse'),450);
+}
+function warn(){
+  const stage=document.querySelector('.stage');
+  stage.classList.add('shake'); setTimeout(()=>stage.classList.remove('shake'),350);
+}
+function render(){
+  const q=questions[s.idx];
+  s.locked=false; s.hinted=false;
+  el.feedback.textContent=''; el.nextBtn.classList.add('hidden');
+  el.emoji.textContent=q.emoji; el.word.textContent=q.word; el.choices.innerHTML='';
+  shuffle(q.choices).forEach(c=>{
+    const b=document.createElement('button');
+    b.className='choice'; b.textContent=c;
+    b.onclick=()=>pick(b,c,q.pinyin);
+    el.choices.appendChild(b);
   });
-
-  updateHeader();
+  update();
 }
-
-function selectChoice(btn, choice, answer) {
-  if (state.locked) return;
-  state.locked = true;
-
-  const all = [...document.querySelectorAll('.choice')];
-  const isRight = choice === answer;
-
-  all.forEach(b => {
-    if (b.textContent === answer) b.classList.add('correct');
-  });
-
-  if (isRight) {
-    state.score += 10;
-    el.feedback.textContent = '🎉 太棒啦！答对了！';
-    btn.classList.add('correct');
-    speak('太棒啦，答对了');
-  } else {
-    state.lives -= 1;
+function pick(btn, value, ans){
+  if(s.locked)return; s.locked=true;
+  const all=[...document.querySelectorAll('.choice')];
+  all.forEach(b=>{ if(b.textContent===ans) b.classList.add('correct'); });
+  if(value===ans){
+    const plus = s.combo>=3 ? 15 : 10;
+    s.score += plus; s.combo +=1;
+    el.feedback.textContent=`🎉 正确！+${plus} 分`;
+    btn.classList.add('correct'); beep('ok'); celebrate(); speak('答对了，真棒');
+  }else{
+    s.lives -=1; s.combo=0;
     btn.classList.add('wrong');
-    el.feedback.textContent = `💡 正确答案是 ${answer}`;
-    speak('再试试，你可以的');
+    el.feedback.textContent=`❌ 再想想～正确答案：${ans}`;
+    beep('bad'); warn(); speak('再试试，你可以的');
   }
-
-  updateHeader();
-
-  if (state.lives <= 0) {
-    setTimeout(() => finish(false), 700);
-  } else {
-    el.nextBtn.classList.remove('hidden');
-  }
+  update();
+  if(s.lives<=0){setTimeout(()=>finish(false),550);return;}
+  el.nextBtn.classList.remove('hidden');
 }
-
-function next() {
-  state.idx += 1;
-  if (state.idx >= questions.length) {
-    finish(true);
-    return;
-  }
-  renderQuestion();
+function next(){
+  s.idx +=1;
+  if(s.idx>=questions.length){finish(true);return;}
+  render();
 }
-
-function finish(success) {
-  el.barFill.style.width = '100%';
-  el.progressText.textContent = `${questions.length} / ${questions.length}`;
+function hint(){
+  if(s.hinted || s.locked) return;
+  s.hinted = true; s.score=Math.max(0,s.score-2);
+  const q=questions[s.idx];
+  const wrong=[...document.querySelectorAll('.choice')].filter(b=>b.textContent!==q.pinyin);
+  if(wrong.length){
+    wrong[Math.floor(Math.random()*wrong.length)].style.opacity=.25;
+  }
+  el.feedback.textContent='💡 已排除一个错误答案（-2分）';
+  update();
+}
+function finish(ok){
+  el.barFill.style.width='100%'; el.progressText.textContent=`${questions.length} / ${questions.length}`;
   el.resultModal.classList.remove('hidden');
-  if (success) {
-    el.resultTitle.textContent = '🏆 恭喜通关！';
-    el.resultDesc.textContent = `你获得了 ${state.score} 分，拼音小勇士就是你！`;
+  if(ok){
+    el.resultTitle.textContent='🏆 星舰通关成功！';
+    el.resultDesc.textContent=`总分 ${s.score}，你是拼音银河小英雄！`;
     speak('恭喜你，闯关成功');
-  } else {
-    el.resultTitle.textContent = '🌟 不要灰心';
-    el.resultDesc.textContent = `你获得了 ${state.score} 分，再挑战一次会更棒！`;
-    speak('不要灰心，再来一次');
+  }else{
+    el.resultTitle.textContent='🌟 差一点点就成功啦';
+    el.resultDesc.textContent=`本次得分 ${s.score}，再挑战一次会更强！`;
+    speak('不要灰心，再来一局');
   }
 }
+function restart(){ s.idx=0;s.score=0;s.lives=3;s.combo=0;el.resultModal.classList.add('hidden');render(); }
 
-function restart() {
-  state.idx = 0;
-  state.score = 0;
-  state.lives = 3;
-  el.resultModal.classList.add('hidden');
-  renderQuestion();
-}
+el.nextBtn.onclick=next;
+el.restartBtn.onclick=restart;
+el.speakBtn.onclick=()=>{const q=questions[s.idx]; speak(`${q.word}，请选出正确拼音`) };
+el.hintBtn.onclick=hint;
 
-el.nextBtn.addEventListener('click', next);
-el.restartBtn.addEventListener('click', restart);
-el.speakBtn.addEventListener('click', () => {
-  const q = questions[state.idx];
-  speak(`${q.word}，请选出正确拼音`);
-});
+// simple starfield fx
+(function(){
+  const c=document.getElementById('fx'),ctx=c.getContext('2d');
+  let w,h,stars=[];
+  const resize=()=>{w=c.width=innerWidth;h=c.height=innerHeight;stars=Array.from({length:90},()=>({x:Math.random()*w,y:Math.random()*h,z:Math.random()*1.5+0.3}));};
+  addEventListener('resize',resize); resize();
+  (function loop(){
+    ctx.clearRect(0,0,w,h);
+    for(const s of stars){
+      s.y += s.z; if(s.y>h){s.y=0;s.x=Math.random()*w;}
+      ctx.fillStyle=`rgba(120,220,255,${0.25+s.z/2})`;
+      ctx.fillRect(s.x,s.y,s.z*2,s.z*2);
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
 
-renderQuestion();
+render();
