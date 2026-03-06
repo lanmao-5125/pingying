@@ -31,6 +31,10 @@ function pickLocalQuestion(){
   return JSON.parse(JSON.stringify(list[Math.floor(Math.random() * list.length)]));
 }
 
+function isValidQuestion(q){
+  return q && typeof q.word==='string' && typeof q.pinyin==='string' && Array.isArray(q.choices) && q.choices.length>=2;
+}
+
 async function aiQuestion(){
   const r = await fetch('/api/ai/generate-question', {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -43,7 +47,7 @@ async function aiQuestion(){
 function prefetchNextQuestion(){
   nextQPromise = aiQuestion()
     .then(q => {
-      if (q && q.word) nextQCache = q;
+      if (isValidQuestion(q)) nextQCache = q;
       return q;
     })
     .catch(() => null);
@@ -69,35 +73,48 @@ function celebrate(){const st=document.querySelector('.stage');st.classList.add(
 function warn(){const st=document.querySelector('.stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),350)}
 
 async function render(){
-  s.locked=true; s.hinted=false;
-  el.nextBtn.classList.add('hidden');
-  el.choices.innerHTML='';
+  try{
+    s.locked=true; s.hinted=false;
+    el.nextBtn.classList.add('hidden');
+    el.choices.innerHTML='';
 
-  // 秒切：优先用缓存AI题；没有就先用本地题立刻展示
-  let q = nextQCache || null;
-  if (!q) q = pickLocalQuestion();
+    // 秒切：优先用缓存AI题；没有就先用本地题立刻展示
+    let q = nextQCache || null;
+    if (!isValidQuestion(q)) q = pickLocalQuestion();
 
-  s.q = q;
-  nextQCache = null;
-  nextQPromise = null;
+    s.q = q;
+    nextQCache = null;
+    nextQPromise = null;
 
-  if (q?.word) {
-    s.recentWords.push(q.word);
-    s.recentWords = s.recentWords.slice(-6);
+    if (q?.word) {
+      s.recentWords.push(q.word);
+      s.recentWords = s.recentWords.slice(-6);
+    }
+
+    el.emoji.textContent=s.q.emoji||'🧩';
+    el.word.textContent=s.q.word;
+    el.feedback.textContent='';
+    shuffle(s.q.choices).forEach(c=>{
+      const b=document.createElement('button'); b.className='choice'; b.textContent=c;
+      b.onclick=()=>pick(b,c,s.q.pinyin); el.choices.appendChild(b);
+    });
+    update();
+  }catch(e){
+    console.error('render failed:', e);
+    s.q = pickLocalQuestion();
+    el.emoji.textContent=s.q.emoji||'🧩';
+    el.word.textContent=s.q.word;
+    el.choices.innerHTML='';
+    shuffle(s.q.choices).forEach(c=>{
+      const b=document.createElement('button'); b.className='choice'; b.textContent=c;
+      b.onclick=()=>pick(b,c,s.q.pinyin); el.choices.appendChild(b);
+    });
+    el.feedback.textContent='已切到极速模式';
+    update();
+  }finally{
+    s.locked=false;
+    prefetchNextQuestion();
   }
-
-  el.emoji.textContent=s.q.emoji||'🧩';
-  el.word.textContent=s.q.word;
-  el.feedback.textContent='';
-  shuffle(s.q.choices).forEach(c=>{
-    const b=document.createElement('button'); b.className='choice'; b.textContent=c;
-    b.onclick=()=>pick(b,c,s.q.pinyin); el.choices.appendChild(b);
-  });
-  s.locked=false;
-  update();
-
-  // 页面已经秒开显示后，再异步预取下一题
-  prefetchNextQuestion();
 }
 
 async function pick(btn, value, ans){
