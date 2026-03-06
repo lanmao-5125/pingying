@@ -30,6 +30,21 @@ html,body{
   position:absolute;inset:0;background:radial-gradient(circle,#ffffff88 0,#ffffff00 65%);
   animation:screen-flash 420ms ease-out forwards;
 }
+.aurora-wave{
+  position:absolute;left:-10%;right:-10%;top:50%;height:140px;
+  background:linear-gradient(90deg,#36f7ff55,#ff4dd866,#ffe66e55,#36f7ff55);
+  filter:blur(8px);
+  animation:aurora-wave 900ms ease-out forwards;
+}
+.spark{
+  position:absolute;width:8px;height:8px;border-radius:50%;
+  box-shadow:0 0 14px currentColor;
+  animation:spark-burst 700ms ease-out forwards;
+}
+.float-emoji{
+  position:absolute;font-size:28px;
+  animation:float-up 1000ms ease-out forwards;
+}
 
 .app{
   position:relative;
@@ -173,6 +188,20 @@ html,body{
   0%{opacity:0}
   20%{opacity:1}
   100%{opacity:0}
+}
+@keyframes aurora-wave{
+  0%{transform:translateY(40px) scaleX(.8);opacity:0}
+  20%{opacity:1}
+  100%{transform:translateY(-40px) scaleX(1.1);opacity:0}
+}
+@keyframes spark-burst{
+  0%{transform:translate(-50%,-50%) scale(.5);opacity:1}
+  100%{transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0);opacity:0}
+}
+@keyframes float-up{
+  0%{transform:translate(-50%,0) scale(.6);opacity:0}
+  20%{opacity:1}
+  100%{transform:translate(-50%,-120px) scale(1.2);opacity:0}
 }
 
 /* 平板/手机：改为一列，按钮更大，避免误触 */

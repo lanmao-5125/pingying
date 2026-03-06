@@ -44,6 +44,7 @@ const localBank = [
 const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, q: null, weakPoints: [], recentWords: [] };
 let nextQPromise = null;
 let nextQCache = null;
+let autoNextTimer = null;
 const $ = id => document.getElementById(id);
 const el = {
   level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
@@ -116,10 +117,9 @@ function comboCelebration(combo){
   const layer = el.celebrationLayer;
   if (!layer) return;
 
-  const fireworkCount = combo >= 8 ? 8 : combo >= 5 ? 5 : 3;
-  const confettiCount = combo >= 8 ? 120 : combo >= 5 ? 72 : 48;
+  const fireworkCount = combo >= 10 ? 12 : combo >= 8 ? 8 : combo >= 5 ? 5 : 3;
+  const confettiCount = combo >= 10 ? 180 : combo >= 8 ? 120 : combo >= 5 ? 72 : 48;
 
-  // 烟花环
   for (let i = 0; i < fireworkCount; i++) {
     const ring = document.createElement('div');
     ring.className = 'firework-ring';
@@ -131,28 +131,31 @@ function comboCelebration(combo){
     setTimeout(() => ring.remove(), 700);
   }
 
-  // 彩带雨
   for (let i = 0; i < confettiCount; i++) {
     const c = document.createElement('div');
     c.className = 'confetti';
     c.style.left = `${Math.random() * 100}%`;
     c.style.top = `${6 + Math.random() * 30}%`;
     c.style.background = ['#36f7ff','#ff4dd8','#ffe66e','#65ffae','#7a7cff'][Math.floor(Math.random()*5)];
-    c.style.setProperty('--dx', `${(Math.random() - 0.5) * (combo >= 8 ? 360 : 260)}px`);
-    c.style.setProperty('--dy', `${240 + Math.random() * (combo >= 8 ? 460 : 360)}px`);
+    c.style.setProperty('--dx', `${(Math.random() - 0.5) * (combo >= 8 ? 420 : 260)}px`);
+    c.style.setProperty('--dy', `${240 + Math.random() * (combo >= 8 ? 520 : 360)}px`);
     c.style.setProperty('--rot', `${Math.random() * 900 - 450}deg`);
     c.style.animationDelay = `${Math.random() * 140}ms`;
     layer.appendChild(c);
     setTimeout(() => c.remove(), 1500);
   }
 
-  // 渐进式情绪价值：高连击专属反馈
   if (combo >= 5) {
     const banner = document.createElement('div');
     banner.className = 'combo-banner';
-    banner.textContent = combo >= 8 ? `🔥 超神 ${combo} 连击！` : `⚡ ${combo} 连击，太厉害啦！`;
+    banner.textContent = combo >= 10 ? `👑 传奇 ${combo} 连击！` : combo >= 8 ? `🔥 超神 ${combo} 连击！` : `⚡ ${combo} 连击，太厉害啦！`;
     layer.appendChild(banner);
-    setTimeout(() => banner.remove(), 900);
+    setTimeout(() => banner.remove(), 950);
+
+    const wave = document.createElement('div');
+    wave.className = 'aurora-wave';
+    layer.appendChild(wave);
+    setTimeout(() => wave.remove(), 980);
   }
 
   if (combo >= 8) {
@@ -160,6 +163,31 @@ function comboCelebration(combo){
     flash.className = 'screen-flash';
     layer.appendChild(flash);
     setTimeout(() => flash.remove(), 450);
+
+    for (let i=0;i<28;i++) {
+      const s = document.createElement('div');
+      s.className = 'spark';
+      s.style.left = `${20 + Math.random()*60}%`;
+      s.style.top = `${18 + Math.random()*42}%`;
+      s.style.color = ['#36f7ff','#ff4dd8','#ffe66e','#65ffae'][Math.floor(Math.random()*4)];
+      s.style.setProperty('--dx', `${(Math.random()-0.5)*320}px`);
+      s.style.setProperty('--dy', `${(Math.random()-0.5)*260}px`);
+      layer.appendChild(s);
+      setTimeout(()=>s.remove(),760);
+    }
+  }
+
+  if (combo >= 10) {
+    const em = ['🎉','🌟','🏆','✨','🚀'];
+    for (let i=0;i<14;i++) {
+      const f = document.createElement('div');
+      f.className = 'float-emoji';
+      f.textContent = em[Math.floor(Math.random()*em.length)];
+      f.style.left = `${10 + Math.random()*80}%`;
+      f.style.top = `${58 + Math.random()*24}%`;
+      layer.appendChild(f);
+      setTimeout(()=>f.remove(),1100);
+    }
   }
 }
 
@@ -229,10 +257,6 @@ async function pick(btn, value, ans){
   update();
   if(s.lives<=0){setTimeout(()=>finish(false),500); s.locked=false; return;}
 
-  // 先解锁和显示下一关，确保绝不卡
-  s.locked=false;
-  el.nextBtn.classList.remove('hidden');
-
   // 再异步刷新成AI鼓励文案（不阻塞交互）
   aiFeedback(correct, ans).then(txt => {
     if (txt) {
@@ -240,17 +264,28 @@ async function pick(btn, value, ans){
       speak(txt);
     }
   }).catch(()=>{});
+
+  // 操作优化：答对自动进入下一关；答错保留手动“下一关”
+  s.locked=false;
+  if (correct) {
+    el.nextBtn.classList.add('hidden');
+    clearTimeout(autoNextTimer);
+    autoNextTimer = setTimeout(() => { next(); }, 520);
+  } else {
+    el.nextBtn.classList.remove('hidden');
+  }
 }
 
 async function next(){
   if (s.locked) return;
+  clearTimeout(autoNextTimer);
   s.idx+=1;
   if(s.idx>=totalRounds){finish(true);return;}
   await render();
 }
 function hint(){ if(s.hinted||s.locked)return; s.hinted=true; s.score=Math.max(0,s.score-2); const wrong=[...document.querySelectorAll('.choice')].filter(b=>b.textContent!==s.q.pinyin); if(wrong.length)wrong[Math.floor(Math.random()*wrong.length)].style.opacity=.25; el.feedback.textContent='💡 已排除一个错误答案（-2分）'; update(); }
-function finish(ok){ el.barFill.style.width='100%'; el.progressText.textContent=`${totalRounds} / ${totalRounds}`; el.resultModal.classList.remove('hidden'); if(ok){el.resultTitle.textContent='🏆 星舰通关成功！'; el.resultDesc.textContent=`总分 ${s.score}，你是拼音银河小英雄！`;} else {el.resultTitle.textContent='🌟 差一点点就成功啦'; el.resultDesc.textContent=`本次得分 ${s.score}，再挑战一次会更强！`;} }
-async function restart(){ s.idx=0;s.score=0;s.lives=3;s.combo=0;s.weakPoints=[];s.recentWords=[]; el.resultModal.classList.add('hidden'); prefetchNextQuestion(); await render(); }
+function finish(ok){ clearTimeout(autoNextTimer); el.barFill.style.width='100%'; el.progressText.textContent=`${totalRounds} / ${totalRounds}`; el.resultModal.classList.remove('hidden'); if(ok){el.resultTitle.textContent='🏆 星舰通关成功！'; el.resultDesc.textContent=`总分 ${s.score}，你是拼音银河小英雄！`;} else {el.resultTitle.textContent='🌟 差一点点就成功啦'; el.resultDesc.textContent=`本次得分 ${s.score}，再挑战一次会更强！`;} }
+async function restart(){ clearTimeout(autoNextTimer); s.idx=0;s.score=0;s.lives=3;s.combo=0;s.weakPoints=[];s.recentWords=[]; el.resultModal.classList.add('hidden'); prefetchNextQuestion(); await render(); }
 
 el.nextBtn.onclick=next; el.restartBtn.onclick=restart;
 el.speakBtn.onclick=()=>{ if(s.q) speak(`${s.q.word}，请选出正确拼音`) };
