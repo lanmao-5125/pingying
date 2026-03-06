@@ -7,40 +7,135 @@
   --bad:#ff5a7a;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;font-family:"PingFang SC","Microsoft YaHei",sans-serif;color:#eaf6ff;background:radial-gradient(circle at 10% 10%,#1d2c78 0,#090f2a 35%,#070b1d 100%)}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+  color:#f4fbff;
+  background:radial-gradient(circle at 10% 10%,#1d2c78 0,#090f2a 35%,#070b1d 100%);
+}
 #fx{position:fixed;inset:0;z-index:0;pointer-events:none}
-.app{position:relative;z-index:1;width:min(980px,94%);margin:20px auto;display:grid;gap:14px}
-.glass{background:linear-gradient(160deg,#ffffff18,#ffffff08);backdrop-filter:blur(8px);border-radius:20px}
-.neon-border{border:1px solid #ffffff35;box-shadow:0 0 0 1px #36f7ff30 inset,0 0 24px #36f7ff33,0 0 40px #ff4dd822}
-.hud{padding:16px 20px}
-.hud h1{margin:0 0 10px;font-size:1.55rem;text-shadow:0 0 14px #36f7ff88}
-.chips{display:flex;flex-wrap:wrap;gap:10px}
-.chip{padding:8px 12px;border-radius:999px;background:#ffffff1a;border:1px solid #ffffff2f;font-weight:700}
-.stage{padding:20px;text-align:center}
-.stage-top{display:flex;justify-content:center;align-items:center;gap:16px}
-.avatar{font-size:3rem;filter:drop-shadow(0 0 10px #36f7ffaa)}
-.label{margin:0;color:#b8dfff}
-.hanzi{font-size:3rem;font-weight:900;text-shadow:0 0 20px #7a7cffaa}
-.actions{margin:14px 0;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
-.btn{border:none;border-radius:999px;padding:11px 18px;font-weight:800;color:#fff;background:#ffffff20;border:1px solid #ffffff3f;cursor:pointer;transition:.2s}
+
+.app{
+  position:relative;
+  z-index:1;
+  width:min(1100px,95%);
+  margin:18px auto 30px;
+  display:grid;
+  gap:18px;
+}
+.glass{background:linear-gradient(160deg,#ffffff1f,#ffffff0d);backdrop-filter:blur(8px);border-radius:22px}
+.neon-border{border:1px solid #ffffff40;box-shadow:0 0 0 1px #36f7ff30 inset,0 0 24px #36f7ff2f,0 0 40px #ff4dd81a}
+
+.hud{padding:20px 24px}
+.hud h1{
+  margin:0 0 14px;
+  font-size:clamp(1.6rem,2.5vw,2.2rem);
+  line-height:1.2;
+  letter-spacing:.5px;
+  text-shadow:0 0 14px #36f7ff88;
+}
+.chips{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px}
+.chip{
+  padding:12px 14px;
+  border-radius:14px;
+  background:#ffffff1d;
+  border:1px solid #ffffff30;
+  font-size:clamp(1rem,1.5vw,1.2rem);
+  text-align:center;
+  font-weight:700;
+}
+.chip b{font-size:1.25em}
+
+.stage{padding:28px 24px;text-align:center}
+.stage-top{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap}
+.avatar{font-size:clamp(3rem,5vw,4.6rem);filter:drop-shadow(0 0 10px #36f7ffaa)}
+.label{margin:0;color:#cce8ff;font-size:clamp(1rem,1.5vw,1.2rem)}
+.hanzi{
+  font-size:clamp(3.2rem,8vw,5.2rem);
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:2px;
+  text-shadow:0 0 20px #7a7cffaa;
+  margin-top:6px;
+}
+.actions{margin:20px 0 16px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+
+.btn{
+  border:none;
+  border-radius:999px;
+  padding:14px 24px;
+  font-weight:800;
+  font-size:clamp(1.05rem,1.5vw,1.2rem);
+  color:#fff;
+  background:#ffffff24;
+  border:1px solid #ffffff42;
+  cursor:pointer;
+  transition:.2s;
+}
 .btn.primary{background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:0 8px 20px #36f7ff55}
 .btn:hover{transform:translateY(-2px) scale(1.02)}
-.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:8px}
-.choice{padding:15px 10px;border-radius:14px;background:linear-gradient(145deg,#ffffff22,#ffffff0d);border:2px solid transparent;color:#fff;font-size:1.4rem;font-weight:900;cursor:pointer;transition:.2s}
+
+.choices{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(180px,1fr));
+  gap:14px;
+  margin-top:8px;
+}
+.choice{
+  min-height:78px;
+  padding:16px 10px;
+  border-radius:16px;
+  background:linear-gradient(145deg,#ffffff24,#ffffff0f);
+  border:2px solid transparent;
+  color:#fff;
+  font-size:clamp(1.6rem,3vw,2.1rem);
+  font-weight:900;
+  letter-spacing:.8px;
+  cursor:pointer;
+  transition:.2s;
+}
 .choice:hover{border-color:#fff;transform:translateY(-2px)}
 .choice.correct{background:#123f26;border-color:#65ffae;box-shadow:0 0 18px #2be37c66}
 .choice.wrong{background:#4f1322;border-color:#ff9db2;box-shadow:0 0 18px #ff5a7a66}
-.feedback{min-height:28px;font-size:1.1rem;font-weight:900}
-.bottom{padding:14px 18px;display:grid;gap:8px}
-.progress-wrap{display:flex;align-items:center;gap:10px}
-.progress{height:14px;background:#ffffff26;border-radius:999px;flex:1;overflow:hidden}
+
+.feedback{
+  min-height:36px;
+  font-size:clamp(1.2rem,2vw,1.5rem);
+  line-height:1.4;
+  font-weight:900;
+  margin:14px 0 2px;
+}
+
+.bottom{padding:16px 18px;display:grid;gap:10px}
+.progress-wrap{display:flex;align-items:center;gap:12px}
+.progress{height:16px;background:#ffffff26;border-radius:999px;flex:1;overflow:hidden}
 .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--pink),#ffe66e);transition:.35s}
-.mission{color:#cbeeff;font-size:.95rem}
+#progressText{font-size:1.1rem;font-weight:800}
+.mission{color:#d6f0ff;font-size:clamp(1rem,1.5vw,1.15rem);font-weight:700}
+
 .hidden{display:none!important}
 .modal{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:10}
-.modal-card{width:min(420px,92%);padding:24px;text-align:center}
+.modal-card{width:min(520px,94%);padding:28px;text-align:center}
+.modal-card h2{font-size:clamp(1.8rem,3vw,2.3rem);margin:.2em 0}
+.modal-card p{font-size:clamp(1.1rem,2vw,1.35rem);line-height:1.6}
+
 .pulse{animation:pulse .5s ease}
 .shake{animation:shake .35s ease}
 @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-@media (max-width:640px){.hanzi{font-size:2.3rem}.hud h1{font-size:1.25rem}}
+
+/* 平板/手机：改为一列，按钮更大，避免误触 */
+@media (max-width:900px){
+  .chips{grid-template-columns:repeat(2,minmax(130px,1fr))}
+  .choices{grid-template-columns:1fr}
+  .choice{min-height:86px;font-size:2rem}
+}
+@media (max-width:640px){
+  .app{width:min(96%,96%)}
+  .hud,.stage{padding:18px 14px}
+  .btn{width:100%}
+  .actions{gap:10px}
+  .hanzi{font-size:4rem}
+  .feedback{font-size:1.3rem}
+}
