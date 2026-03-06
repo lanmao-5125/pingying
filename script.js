@@ -1,6 +1,14 @@
 const totalRounds = 10;
+const localBank = [
+  { word:'猫', pinyin:'māo', emoji:'🐱', choices:['māo','niú','gǒu','yú'] },
+  { word:'狗', pinyin:'gǒu', emoji:'🐶', choices:['māo','gǒu','jī','niǎo'] },
+  { word:'鱼', pinyin:'yú', emoji:'🐟', choices:['qū','yú','rì','mù'] },
+  { word:'花', pinyin:'huā', emoji:'🌸', choices:['huā','huá','huǎ','huà'] },
+  { word:'山', pinyin:'shān', emoji:'⛰️', choices:['shān','sān','shǎn','shàn'] }
+];
 const s = { idx: 0, score: 0, lives: 3, combo: 0, locked: false, hinted: false, q: null, weakPoints: [], recentWords: [] };
 let nextQPromise = null;
+let nextQCache = null;
 const $ = id => document.getElementById(id);
 const el = {
   level: $('level'), score: $('score'), lives: $('lives'), combo: $('combo'),
@@ -17,6 +25,12 @@ function speak(text){
   msg.lang='zh-CN'; msg.rate=.9;
   speechSynthesis.cancel(); speechSynthesis.speak(msg);
 }
+function pickLocalQuestion(){
+  const pool = localBank.filter(q => !s.recentWords.slice(-4).includes(q.word));
+  const list = pool.length ? pool : localBank;
+  return JSON.parse(JSON.stringify(list[Math.floor(Math.random() * list.length)]));
+}
+
 async function aiQuestion(){
   const r = await fetch('/api/ai/generate-question', {
     method:'POST', headers:{'Content-Type':'application/json'},
@@ -25,8 +39,14 @@ async function aiQuestion(){
   const data = await r.json();
   return data.question;
 }
+
 function prefetchNextQuestion(){
-  nextQPromise = aiQuestion().catch(() => null);
+  nextQPromise = aiQuestion()
+    .then(q => {
+      if (q && q.word) nextQCache = q;
+      return q;
+    })
+    .catch(() => null);
 }
 async function aiFeedback(correct, target){
   try{
@@ -50,13 +70,17 @@ function warn(){const st=document.querySelector('.stage');st.classList.add('shak
 
 async function render(){
   s.locked=true; s.hinted=false;
-  el.feedback.textContent='🛰️ AI正在生成下一题...';
   el.nextBtn.classList.add('hidden');
   el.choices.innerHTML='';
 
-  const q = nextQPromise ? await nextQPromise : await aiQuestion();
+  // 秒切：优先用缓存AI题；没有就先用本地题立刻展示
+  let q = nextQCache || null;
+  if (!q) q = pickLocalQuestion();
+
+  s.q = q;
+  nextQCache = null;
   nextQPromise = null;
-  s.q = q || { word:'猫', pinyin:'māo', emoji:'🐱', choices:['māo','niú','gǒu','yú'] };
+
   if (q?.word) {
     s.recentWords.push(q.word);
     s.recentWords = s.recentWords.slice(-6);
@@ -71,6 +95,9 @@ async function render(){
   });
   s.locked=false;
   update();
+
+  // 页面已经秒开显示后，再异步预取下一题
+  prefetchNextQuestion();
 }
 
 async function pick(btn, value, ans){
@@ -89,7 +116,6 @@ async function pick(btn, value, ans){
   }
   update();
   if(s.lives<=0){setTimeout(()=>finish(false),500);return;}
-  prefetchNextQuestion();
   el.nextBtn.classList.remove('hidden');
 }
 
